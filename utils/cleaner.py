@@ -20,7 +20,7 @@ class Cleaner:
             self.merge_by_id()
 
         return self.data
-    
+
     def strings_to_numbers(self):
         rename_dict = {
             'Unchecked': 0,
@@ -52,10 +52,11 @@ class Cleaner:
         self.data = self.data.rename(columns={'Image Name': 'ID_Imaging'})
         self.data = pd.merge(self.id, self.data, how='left')
         self.data = self.data.drop(columns=['ID_Imaging'])
-            
+        self.data = self.data.dropna(subset=[col for col in self.data.columns if col not in self.id.columns], how='all')
+
     @staticmethod
     def extract_TAVI_id(col):
         col = col.apply(lambda name: name.split('_')[1])
         col = col.astype(int)
-        
+
         return col
