@@ -4,12 +4,20 @@ from loguru import logger
 
 
 class Cleaner:
-    def __init__(self, data: pd.DataFrame) -> None:
-        self.data = data
+    def __init__(self, config) -> None:
+        file_path = config.file_path
+        id_path = config.id_path
+        self.config = config
+        self.data = pd.read_excel(file_path)
+        if id_path is not None:
+            self.id = pd.read_excel(id_path)
         self.events = None
 
     def __call__(self) -> pd.DataFrame:
-        self.strings_to_numbers()
+        if self.config.strings_to_numbers:
+            self.strings_to_numbers()
+        if self.config.merge_by_id:
+            self.merge_by_id()
 
         return self.data
     
@@ -38,3 +46,16 @@ class Cleaner:
 
         for old, new in rename_dict.items():  # faster than Series.replace for len(data) > 100
             self.data = self.data.replace(old, new, regex=False)
+
+    def merge_by_id(self):
+        self.data['Image Name'] = self.extract_TAVI_id(self.data['Image Name'])
+        self.data = self.data.rename(columns={'Image Name': 'ID_Imaging'})
+        self.data = pd.merge(self.id, self.data, how='left')
+        self.data = self.data.drop(columns=['ID_Imaging'])
+            
+    @staticmethod
+    def extract_TAVI_id(col):
+        col = col.apply(lambda name: name.split('_')[1])
+        col = col.astype(int)
+        
+        return col

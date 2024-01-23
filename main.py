@@ -3,7 +3,7 @@ import hydra
 
 import pandas as pd
 from loguru import logger
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
 from pathlib import Path
 
 from utils.cleaner import Cleaner
@@ -12,9 +12,7 @@ from utils.cleaner import Cleaner
 @hydra.main(version_base=None, config_path='.', config_name='config')
 def main(config: DictConfig) -> None:
     file_path = config.file_path
-    data = pd.read_excel(file_path)
-
-    cleaner = Cleaner(data)
+    cleaner = Cleaner(config)
     new_data = cleaner()
 
     out_dir = os.path.dirname(file_path)
